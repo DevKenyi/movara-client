@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: Props) {
       {/* Footer */}
       <div style={{ padding: '16px 12px 0', borderTop: '1px solid #E5E7EB', marginTop: 12 }}>
         <div style={{
-          background: '#F8FAFC', borderRadius: 10, padding: '10px 12px', marginBottom: 10,
+          background: '#F5F3EE', borderRadius: 10, padding: '10px 12px', marginBottom: 10,
         }}>
           <div style={{
             width: 32, height: 32, borderRadius: '50%',
@@ -110,7 +110,7 @@ export default function DashboardLayout({ children }: Props) {
   )
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8FAFC' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F3EE' }}>
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div

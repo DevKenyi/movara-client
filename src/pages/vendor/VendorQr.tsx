@@ -50,7 +50,7 @@ export default function VendorQr() {
           </p>
 
           <div style={{
-            background: '#F8FAFC', border: '2px dashed #E5E7EB', borderRadius: 14,
+            background: '#F5F3EE', border: '2px dashed #E5E7EB', borderRadius: 14,
             padding: 20, marginBottom: 20, display: 'inline-block',
           }}>
             <img

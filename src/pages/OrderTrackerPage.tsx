@@ -54,7 +54,7 @@ export default function OrderTrackerPage() {
   }, [status])
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#F5F3EE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
         <div className="spinner" style={{ width: 32, height: 32, margin: '0 auto 12px' }} />
         <p style={{ color: '#6B7280', fontSize: 14 }}>Loading order…</p>
@@ -66,7 +66,7 @@ export default function OrderTrackerPage() {
   const isDelivered = status === 'DELIVERED'
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F8FAFC', minHeight: '100vh' }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F5F3EE', minHeight: '100vh' }}>
       {/* Hero */}
       <div style={{ background: '#095C46', padding: '32px 20px 28px', textAlign: 'center' }}>
         <div style={{

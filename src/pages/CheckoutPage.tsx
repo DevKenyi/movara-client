@@ -47,7 +47,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F8FAFC', minHeight: '100vh' }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F5F3EE', minHeight: '100vh' }}>
       {/* Header */}
       <div style={{ background: '#095C46', padding: '20px 20px 20px' }}>
         <button

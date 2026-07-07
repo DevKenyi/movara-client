@@ -39,7 +39,7 @@ export default function CustomerMenuPage() {
   )
 
   if (error || !vendor) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F3EE' }}>
       <div style={{ textAlign: 'center', padding: 32 }}>
         <p style={{ fontSize: 48, marginBottom: 12 }}>😕</p>
         <h2 style={{ fontSize: 20, fontWeight: 700 }}>Restaurant not found</h2>
@@ -51,7 +51,7 @@ export default function CustomerMenuPage() {
   )
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F8FAFC', minHeight: '100vh', paddingBottom: totalItems > 0 ? 90 : 24 }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F5F3EE', minHeight: '100vh', paddingBottom: totalItems > 0 ? 90 : 24 }}>
       {/* Hero header */}
       <div style={{ background: '#095C46', padding: '24px 20px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
