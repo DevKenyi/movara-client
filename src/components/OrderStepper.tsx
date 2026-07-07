@@ -1,67 +1,62 @@
 import type { OrderStatus } from '../types'
 
 const STEPS: { status: OrderStatus; label: string; desc: string }[] = [
-  { status: 'PENDING_PAYMENT', label: 'Order Placed',    desc: 'We received your order' },
-  { status: 'PAID',           label: 'Payment Confirmed', desc: 'Payment verified' },
-  { status: 'PREPARING',      label: 'Preparing',        desc: 'Kitchen is on it' },
-  { status: 'READY',          label: 'Ready',            desc: 'Your order is ready!' },
-  { status: 'DELIVERED',      label: 'Delivered',        desc: 'Enjoy your meal!' },
+  { status: 'PENDING_PAYMENT', label: 'Order Placed',       desc: 'Waiting for payment' },
+  { status: 'PAID',            label: 'Payment Confirmed',  desc: 'Payment verified by Flutterwave' },
+  { status: 'PREPARING',       label: 'Preparing',          desc: 'Kitchen is preparing your order' },
+  { status: 'READY',           label: 'Ready for Pickup',   desc: 'Your order is ready!' },
+  { status: 'DELIVERED',       label: 'Delivered',          desc: 'Enjoy your meal 🎉' },
 ]
 
-const ORDER: Record<OrderStatus, number> = {
+const ORDER: Partial<Record<OrderStatus, number>> = {
   PENDING_PAYMENT: 0, PAID: 1, PREPARING: 2, READY: 3, DELIVERED: 4,
-  CANCELLED: -1, FAILED: -1,
 }
 
-interface Props { status: OrderStatus }
-
-export default function OrderStepper({ status }: Props) {
+export default function OrderStepper({ status }: { status: OrderStatus }) {
   const currentIndex = ORDER[status] ?? 0
 
   return (
-    <div style={{ padding: '8px 0' }}>
+    <div style={{ padding: '4px 0' }}>
       {STEPS.map((step, i) => {
-        const done    = i < currentIndex
-        const active  = i === currentIndex
-        const pending = i > currentIndex
+        const done   = i < currentIndex
+        const active = i === currentIndex
+        const last   = i === STEPS.length - 1
 
         return (
-          <div key={step.status} style={{ display: 'flex', gap: 16, paddingBottom: i < STEPS.length - 1 ? 0 : 0 }}>
-            {/* Line + circle column */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 28 }}>
+          <div key={step.status} style={{ display: 'flex', gap: 14 }}>
+            {/* Connector column */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: done || active
-                  ? 'linear-gradient(135deg, var(--green-start), var(--green-end))'
-                  : 'var(--border)',
-                color: done || active ? '#fff' : '#999',
-                fontWeight: 700, fontSize: 13,
-                border: active ? '2px solid var(--green-end)' : 'none',
+                fontWeight: 700, fontSize: 11,
+                background: done || active ? '#095C46' : '#E5E7EB',
+                color: done || active ? '#fff' : '#9CA3AF',
+                border: active ? '2px solid #053A2C' : '2px solid transparent',
                 transition: 'all 0.3s',
               }}>
                 {done ? '✓' : i + 1}
               </div>
-              {i < STEPS.length - 1 && (
+              {!last && (
                 <div style={{
-                  width: 2, flexGrow: 1, minHeight: 32,
-                  background: done
-                    ? 'linear-gradient(to bottom, var(--green-start), var(--green-end))'
-                    : 'var(--border)',
+                  width: 2, flexGrow: 1, minHeight: 28,
+                  background: done ? '#095C46' : '#E5E7EB',
+                  margin: '3px 0',
                   transition: 'background 0.4s',
-                  margin: '4px 0'
                 }} />
               )}
             </div>
 
             {/* Text */}
-            <div style={{ paddingBottom: i < STEPS.length - 1 ? 24 : 0, paddingTop: 2 }}>
+            <div style={{ paddingBottom: last ? 0 : 20, paddingTop: 2 }}>
               <p style={{
                 fontWeight: active ? 700 : 500,
                 fontSize: 14,
-                color: pending ? 'var(--text-secondary)' : 'var(--text-primary)',
-              }}>{step.label}</p>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{step.desc}</p>
+                color: active ? '#095C46' : i < currentIndex ? '#111827' : '#9CA3AF',
+              }}>
+                {step.label}
+              </p>
+              <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>{step.desc}</p>
             </div>
           </div>
         )

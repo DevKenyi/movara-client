@@ -30,17 +30,12 @@ export default function OrderTrackerPage() {
     if (!orderId) return
     fetchStatus()
 
-    // SSE for real-time updates
     const sse = new EventSource(`/api/sse/orders/${orderId}`)
     sseRef.current = sse
     sse.addEventListener('order-update', (e) => {
-      try {
-        const data = JSON.parse(e.data)
-        setStatus(data.status as OrderStatus)
-      } catch {}
+      try { setStatus(JSON.parse(e.data).status as OrderStatus) } catch {}
     })
     sse.onerror = () => {
-      // SSE failed — fall back to polling every 4s
       sse.close()
       intervalRef.current = setInterval(fetchStatus, 4000)
     }
@@ -51,7 +46,6 @@ export default function OrderTrackerPage() {
     }
   }, [orderId])
 
-  // Stop polling once delivered or failed
   useEffect(() => {
     if (['DELIVERED', 'CANCELLED', 'FAILED'].includes(status)) {
       if (intervalRef.current) clearInterval(intervalRef.current)
@@ -60,64 +54,79 @@ export default function OrderTrackerPage() {
   }, [status])
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+    <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
         <div className="spinner" style={{ width: 32, height: 32, margin: '0 auto 12px' }} />
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Loading order…</p>
+        <p style={{ color: '#6B7280', fontSize: 14 }}>Loading order…</p>
       </div>
     </div>
   )
 
-  const isFailed   = status === 'CANCELLED' || status === 'FAILED'
+  const isFailed    = status === 'CANCELLED' || status === 'FAILED'
   const isDelivered = status === 'DELIVERED'
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', padding: 20 }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 28 }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', background: '#F8FAFC', minHeight: '100vh' }}>
+      {/* Hero */}
+      <div style={{ background: '#095C46', padding: '32px 20px 28px', textAlign: 'center' }}>
         <div style={{
-          width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px',
-          background: isFailed ? '#FEE2E2' : 'linear-gradient(135deg, var(--green-start), var(--green-end))',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28
+          width: 72, height: 72, borderRadius: '50%', margin: '0 auto 14px',
+          background: isFailed ? '#FEE2E2' : 'rgba(255,255,255,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
+          border: isFailed ? 'none' : '2px solid rgba(255,255,255,0.3)',
         }}>
           {isFailed ? '❌' : isDelivered ? '🎉' : '🍽️'}
         </div>
-        <h1 style={{ fontSize: 20, fontWeight: 800 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>
           {isFailed ? 'Order Issue' : isDelivered ? 'Enjoy Your Meal!' : 'Order Tracking'}
         </h1>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-          Order ID: <code style={{ fontSize: 11 }}>{orderId?.substring(0, 8)}…</code>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginTop: 6 }}>
+          Order <code style={{ fontSize: 11, background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>
+            {orderId?.substring(0, 8).toUpperCase()}…
+          </code>
         </p>
       </div>
 
-      {error && <p style={{ color: '#DC2626', textAlign: 'center', fontSize: 13, marginBottom: 16 }}>{error}</p>}
+      <div style={{ padding: '16px 16px 32px' }}>
+        {error && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 8, padding: '10px 14px', marginBottom: 14, color: '#DC2626', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
 
-      {isFailed ? (
-        <div className="card" style={{ padding: 20, textAlign: 'center' }}>
-          <p style={{ color: '#DC2626', fontWeight: 600, marginBottom: 12 }}>
-            {status === 'CANCELLED' ? 'Order was cancelled' : 'Payment failed'}
-          </p>
-          <button className="btn-primary" onClick={() => navigate(-2)}>Order Again</button>
-        </div>
-      ) : (
-        <div className="card" style={{ padding: 20 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 }}>Live Status</h3>
-          <OrderStepper status={status} />
-        </div>
-      )}
+        {status === 'PENDING_PAYMENT' && (
+          <div style={{
+            background: '#FFFBEB', border: '1px solid #FDE68A',
+            borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#92400E',
+          }}>
+            ⏳ Waiting for payment confirmation. Keep this tab open.
+          </div>
+        )}
 
-      {status === 'PENDING_PAYMENT' && (
-        <div style={{ marginTop: 16, padding: '12px 16px', background: '#FFFBEB', borderRadius: 8,
-          border: '1px solid #F59E0B', fontSize: 13, color: '#92400E' }}>
-          ⏳ Waiting for payment confirmation. Keep this tab open.
-        </div>
-      )}
+        {isFailed ? (
+          <div className="surface-card" style={{ padding: 24, textAlign: 'center' }}>
+            <p style={{ color: '#DC2626', fontWeight: 600, marginBottom: 16, fontSize: 15 }}>
+              {status === 'CANCELLED' ? 'Your order was cancelled' : 'Payment failed'}
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate(-2)}>
+              Order Again
+            </button>
+          </div>
+        ) : (
+          <div className="surface-card" style={{ padding: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>
+              Live Status
+            </p>
+            <OrderStepper status={status} />
+          </div>
+        )}
 
-      {isDelivered && (
-        <button className="btn-primary" style={{ width: '100%', marginTop: 20 }} onClick={() => navigate(-2)}>
-          Order Again
-        </button>
-      )}
+        {isDelivered && (
+          <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 16 }} onClick={() => navigate(-2)}>
+            Order Again
+          </button>
+        )}
+      </div>
     </div>
   )
 }

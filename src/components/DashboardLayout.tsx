@@ -1,17 +1,26 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import {
+  LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode,
+  Store, Settings, LogOut, Menu, X, ShieldCheck,
+} from 'lucide-react'
 
-interface NavItem { label: string; to: string; icon: string }
+interface NavItem { label: string; to: string; icon: ReactNode }
 
 const VENDOR_NAV: NavItem[] = [
-  { label: 'Orders',    to: '/vendor/orders', icon: '📋' },
-  { label: 'Menu',      to: '/vendor/menu',   icon: '🍽️' },
-  { label: 'QR Code',   to: '/vendor/qr',     icon: '📱' },
+  { label: 'Dashboard', to: '/vendor/dashboard', icon: <LayoutDashboard size={17} /> },
+  { label: 'Orders',    to: '/vendor/orders',    icon: <ClipboardList size={17} /> },
+  { label: 'Menu',      to: '/vendor/menu',      icon: <UtensilsCrossed size={17} /> },
+  { label: 'QR Code',   to: '/vendor/qr',        icon: <QrCode size={17} /> },
+  { label: 'Settings',  to: '/vendor/settings',  icon: <Settings size={17} /> },
 ]
+
 const ADMIN_NAV: NavItem[] = [
-  { label: 'Vendors',   to: '/admin/vendors', icon: '🏪' },
-  { label: 'Orders',    to: '/admin/orders',  icon: '📋' },
+  { label: 'Dashboard',   to: '/admin/dashboard', icon: <LayoutDashboard size={17} /> },
+  { label: 'Restaurants', to: '/admin/vendors',   icon: <Store size={17} /> },
+  { label: 'Orders',      to: '/admin/orders',    icon: <ClipboardList size={17} /> },
+  { label: 'Admins',      to: '/admin/admins',    icon: <ShieldCheck size={17} /> },
 ]
 
 interface Props { children: ReactNode }
@@ -19,58 +28,144 @@ interface Props { children: ReactNode }
 export default function DashboardLayout({ children }: Props) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const nav = user?.role === 'ADMIN' ? ADMIN_NAV : VENDOR_NAV
 
   const handleLogout = () => { logout(); navigate('/login') }
 
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Sidebar */}
-      <aside style={{
-        width: 220, background: 'var(--white)', borderRight: '1px solid var(--border)',
-        display: 'flex', flexDirection: 'column', padding: '24px 0', flexShrink: 0
-      }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--border)' }}>
+  const SidebarContent = () => (
+    <div style={{
+      display: 'flex', flexDirection: 'column', height: '100%',
+      padding: '20px 0',
+    }}>
+      {/* Logo */}
+      <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #E5E7EB' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
           <div style={{
-            background: 'linear-gradient(135deg, var(--green-start), var(--green-end))',
-            color: '#fff', fontWeight: 800, fontSize: 20, padding: '8px 14px',
-            borderRadius: 8, display: 'inline-block'
+            background: '#095C46', color: '#fff', fontWeight: 800,
+            fontSize: 18, padding: '7px 14px', borderRadius: 10,
+            letterSpacing: '-0.3px',
           }}>Movara</div>
-          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-            {user?.role === 'ADMIN' ? 'Admin' : 'Vendor'} Dashboard
-          </p>
-        </div>
-
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
-          {nav.map((item) => (
-            <NavLink key={item.to} to={item.to}
-              style={({ isActive }) => ({
-                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                borderRadius: 8, textDecoration: 'none', fontSize: 14, fontWeight: 500,
-                marginBottom: 4,
-                background: isActive ? 'linear-gradient(135deg, #E6F7EE, #D1F0E0)' : 'transparent',
-                color: isActive ? 'var(--green-end)' : 'var(--text-secondary)',
-              })}>
-              <span>{item.icon}</span>{item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div style={{ padding: '0 12px' }}>
-          <div style={{ padding: '12px', background: 'var(--bg)', borderRadius: 8, marginBottom: 12 }}>
-            <p style={{ fontSize: 12, fontWeight: 600 }}>{user?.email}</p>
-            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{user?.role}</p>
-          </div>
-          <button className="btn-secondary" style={{ width: '100%' }} onClick={handleLogout}>
-            Sign out
+          {/* Close button — mobile only */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              display: 'none',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#6B7280', padding: 4,
+            }}
+            className="sidebar-close-btn"
+          >
+            <X size={20} />
           </button>
         </div>
+        <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 6, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+          {user?.role === 'ADMIN' ? 'Admin Portal' : 'Vendor Portal'}
+        </p>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '12px 12px 0' }}>
+        {nav.map(item => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div style={{ padding: '16px 12px 0', borderTop: '1px solid #E5E7EB', marginTop: 12 }}>
+        <div style={{
+          background: '#F8FAFC', borderRadius: 10, padding: '10px 12px', marginBottom: 10,
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: '#E8F5F1', color: '#095C46',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: 13, marginBottom: 6,
+          }}>
+            {user?.email?.[0]?.toUpperCase()}
+          </div>
+          <p style={{ fontSize: 12, fontWeight: 600, color: '#111827' }}>{user?.email}</p>
+          <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>{user?.role}</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="nav-item"
+          style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444' }}
+        >
+          <LogOut size={16} />
+          <span>Sign out</span>
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8FAFC' }}>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+            zIndex: 40, display: 'none',
+          }}
+          className="mobile-backdrop"
+        />
+      )}
+
+      {/* Sidebar — desktop: always visible; mobile: slide-in overlay */}
+      <aside style={{
+        width: 232,
+        flexShrink: 0,
+        background: '#FFFFFF',
+        borderRight: '1px solid #E5E7EB',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        overflowY: 'auto',
+      }}>
+        <SidebarContent />
       </aside>
 
-      {/* Main */}
-      <main style={{ flex: 1, padding: 28, overflowY: 'auto', background: 'var(--bg)' }}>
-        {children}
-      </main>
+      {/* Main content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top navbar */}
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 30,
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid #E5E7EB',
+          padding: '0 24px',
+          height: 56,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4 }}
+          >
+            <Menu size={20} />
+          </button>
+          <div style={{ fontSize: 13, color: '#6B7280' }}>
+            {new Date().toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </div>
+        </header>
+
+        <main style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

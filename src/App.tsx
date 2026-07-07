@@ -7,6 +7,7 @@ import LoginPage          from './pages/LoginPage'
 import CustomerMenuPage   from './pages/CustomerMenuPage'
 import CheckoutPage       from './pages/CheckoutPage'
 import OrderTrackerPage   from './pages/OrderTrackerPage'
+import VendorDashboard    from './pages/vendor/VendorDashboard'
 import VendorOrders       from './pages/vendor/VendorOrders'
 import VendorMenu         from './pages/vendor/VendorMenu'
 import VendorQr           from './pages/vendor/VendorQr'
@@ -36,6 +37,12 @@ export default function App() {
           <Route path="/order/:orderId/status" element={<OrderTrackerPage />} />
 
           {/* Vendor dashboard */}
+          <Route path="/vendor" element={<Navigate to="/vendor/dashboard" replace />} />
+          <Route path="/vendor/dashboard" element={
+            <ProtectedRoute allowedRoles={['VENDOR_STAFF', 'ADMIN']}>
+              <VendorDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/vendor/orders" element={
             <ProtectedRoute allowedRoles={['VENDOR_STAFF', 'ADMIN']}>
               <VendorOrders />
@@ -53,6 +60,7 @@ export default function App() {
           } />
 
           {/* Admin dashboard */}
+          <Route path="/admin" element={<Navigate to="/admin/vendors" replace />} />
           <Route path="/admin/vendors" element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminVendors />

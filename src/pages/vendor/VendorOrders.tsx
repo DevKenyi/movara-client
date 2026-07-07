@@ -2,16 +2,8 @@ import { useEffect, useState } from 'react'
 import api from '../../api/axios'
 import type { Order, OrderStatus } from '../../types'
 import DashboardLayout from '../../components/DashboardLayout'
-
-const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
-  PENDING_PAYMENT: { bg: '#FFFBEB', color: '#D97706' },
-  PAID:            { bg: '#E6F7EE', color: '#3B8A5E' },
-  PREPARING:       { bg: '#EFF6FF', color: '#2563EB' },
-  READY:           { bg: '#F5F3FF', color: '#7C3AED' },
-  DELIVERED:       { bg: '#F0FDF4', color: '#16A34A' },
-  CANCELLED:       { bg: '#FEE2E2', color: '#DC2626' },
-  FAILED:          { bg: '#FEE2E2', color: '#DC2626' },
-}
+import StatusPill from '../../components/StatusPill'
+import { RefreshCw, ChevronRight } from 'lucide-react'
 
 const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
   PAID: 'PREPARING', PREPARING: 'READY', READY: 'DELIVERED',
@@ -24,11 +16,17 @@ export default function VendorOrders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
-  const load = () => {
-    api.get<Order[]>('/api/vendor/orders')
-      .then(r => setOrders(r.data))
-      .finally(() => setLoading(false))
+  const load = async () => {
+    setRefreshing(true)
+    try {
+      const r = await api.get<Order[]>('/api/vendor/orders')
+      setOrders(r.data)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -47,48 +45,64 @@ export default function VendorOrders() {
 
   return (
     <DashboardLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800 }}>Orders</h1>
-        <button className="btn-secondary" onClick={load} style={{ fontSize: 13 }}>↻ Refresh</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#111827' }}>Orders</h1>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>{orders.length} total orders</p>
+        </div>
+        <button
+          onClick={load}
+          disabled={refreshing}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: '#fff', border: '1.5px solid #E5E7EB',
+            borderRadius: 9999, padding: '7px 14px', fontSize: 13,
+            fontWeight: 600, cursor: 'pointer', color: '#374151',
+          }}
+        >
+          <RefreshCw size={14} style={{ animation: refreshing ? 'spin 1s linear infinite' : undefined }} />
+          Refresh
+        </button>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 48 }}>
-          <div className="spinner" style={{ width: 28, height: 28, borderColor: 'var(--border)', borderTopColor: 'var(--green-end)', margin: 'auto' }} />
+        <div style={{ textAlign: 'center', padding: 64 }}>
+          <div className="spinner" style={{ width: 32, height: 32, margin: '0 auto 12px' }} />
+          <p style={{ color: '#9CA3AF', fontSize: 14 }}>Loading orders…</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="card" style={{ padding: 48, textAlign: 'center' }}>
-          <p style={{ fontSize: 40, marginBottom: 8 }}>📋</p>
-          <p style={{ color: 'var(--text-secondary)' }}>No orders yet</p>
+        <div className="surface-card" style={{ padding: 64, textAlign: 'center' }}>
+          <p style={{ fontSize: 40, marginBottom: 10 }}>📋</p>
+          <p style={{ fontWeight: 600, color: '#374151', marginBottom: 4 }}>No orders yet</p>
+          <p style={{ color: '#9CA3AF', fontSize: 13 }}>Orders will appear here when customers place them</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {orders.map(order => {
-            const sc = STATUS_COLOR[order.status] ?? { bg: '#F5F5F5', color: '#666' }
             const nextStatus = NEXT_STATUS[order.status]
             return (
-              <div key={order.id} className="card" style={{ padding: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+              <div key={order.id} className="surface-card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: 15 }}>{order.customerName}</p>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{order.customerPhone}</p>
-                    <p style={{ fontSize: 11, color: '#bbb', marginTop: 2 }}>
-                      {new Date(order.createdAt).toLocaleString()}
+                    <p style={{ fontWeight: 700, fontSize: 15, color: '#111827' }}>{order.customerName}</p>
+                    <p style={{ fontSize: 12, color: '#6B7280', marginTop: 1 }}>{order.customerPhone}</p>
+                    <p style={{ fontSize: 11, color: '#D1D5DB', marginTop: 2 }}>
+                      {new Date(order.createdAt).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                    <span style={{ background: sc.bg, color: sc.color, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
-                      {order.status.replace('_', ' ')}
+                    <StatusPill status={order.status} />
+                    <span style={{ fontWeight: 800, fontSize: 15, color: '#095C46' }}>
+                      ₦{Number(order.total).toLocaleString()}
                     </span>
-                    <span style={{ fontWeight: 700, fontSize: 15 }}>₦{Number(order.total).toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Items */}
-                <div style={{ margin: '10px 0 10px', padding: '10px 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ borderTop: '1px solid #F3F4F6', borderBottom: '1px solid #F3F4F6', padding: '10px 0', marginBottom: 12 }}>
                   {order.items.map(i => (
-                    <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>{i.menuItemName} × {i.quantity}</span>
+                    <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                      <span style={{ color: '#6B7280' }}>{i.menuItemName} × {i.quantity}</span>
                       <span style={{ fontWeight: 500 }}>₦{Number(i.lineTotal).toLocaleString()}</span>
                     </div>
                   ))}
@@ -96,12 +110,14 @@ export default function VendorOrders() {
 
                 {nextStatus && (
                   <button
-                    className="btn-primary"
-                    style={{ padding: '8px 16px', fontSize: 13 }}
+                    className="btn btn-primary btn-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: 5 }}
                     disabled={updating === order.id}
                     onClick={() => updateStatus(order.id, nextStatus)}
                   >
-                    {updating === order.id ? <span className="spinner" /> : NEXT_LABEL[order.status]}
+                    {updating === order.id
+                      ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                      : <><ChevronRight size={14} />{NEXT_LABEL[order.status]}</>}
                   </button>
                 )}
               </div>

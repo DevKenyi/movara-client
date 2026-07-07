@@ -1,63 +1,80 @@
 import type { MenuItem } from '../types'
 import { useCart } from '../contexts/CartContext'
+import { Plus, Minus } from 'lucide-react'
 
-interface Props {
-  item: MenuItem
-}
-
-export default function MenuItemCard({ item }: Props) {
-  const { items, addItem, removeItem, updateQuantity } = useCart()
-  const cartItem = items.find((i) => i.menuItem.id === item.id)
+export default function MenuItemCard({ item }: { item: MenuItem }) {
+  const { items, addItem, updateQuantity } = useCart()
+  const cartItem = items.find(i => i.menuItem.id === item.id)
   const qty = cartItem?.quantity ?? 0
 
   return (
-    <div className="card p-4 flex gap-3">
+    <div className="surface-card" style={{ padding: 14, display: 'flex', gap: 12 }}>
+      {/* Image */}
       {item.imageUrl ? (
         <img
-          src={item.imageUrl}
-          alt={item.name}
-          className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+          src={item.imageUrl} alt={item.name}
+          style={{ width: 76, height: 76, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
         />
       ) : (
-        <div className="w-20 h-20 rounded-lg flex-shrink-0 flex items-center justify-center text-2xl"
-          style={{ background: '#F0F4F0' }}>
+        <div style={{
+          width: 76, height: 76, borderRadius: 10, flexShrink: 0,
+          background: '#E8F5F1', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: 26,
+        }}>
           🍽️
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-sm leading-tight">{item.name}</h3>
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{item.name}</p>
         {item.description && (
-          <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+          <p style={{
+            fontSize: 12, color: '#6B7280', marginTop: 3,
+            overflow: 'hidden', display: '-webkit-box',
+            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
+          }}>
             {item.description}
           </p>
         )}
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-sm">₦{Number(item.price).toLocaleString()}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+          <span style={{ fontWeight: 800, fontSize: 15, color: '#095C46' }}>
+            ₦{Number(item.price).toLocaleString()}
+          </span>
+
           {qty === 0 ? (
-            <button className="btn-primary" style={{ padding: '6px 16px', fontSize: '13px' }} onClick={() => addItem(item)}>
-              + Add
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => addItem(item)}
+              style={{ gap: 4, paddingLeft: 12, paddingRight: 12 }}
+            >
+              <Plus size={13} /> Add
             </button>
           ) : (
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <button
                 onClick={() => updateQuantity(item.id, qty - 1)}
                 style={{
-                  width: 28, height: 28, borderRadius: '50%', border: '1.5px solid var(--border)',
-                  background: 'var(--white)', cursor: 'pointer', fontWeight: 700, fontSize: 16,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: 28, height: 28, borderRadius: '50%',
+                  border: '1.5px solid #E5E7EB', background: '#fff',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#095C46',
                 }}
-              >−</button>
-              <span className="font-semibold text-sm w-4 text-center">{qty}</span>
+              >
+                <Minus size={13} />
+              </button>
+              <span style={{ fontWeight: 700, fontSize: 14, minWidth: 16, textAlign: 'center' }}>{qty}</span>
               <button
                 onClick={() => addItem(item)}
                 style={{
                   width: 28, height: 28, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--green-start), var(--green-end))',
-                  border: 'none', cursor: 'pointer', color: '#fff', fontWeight: 700,
-                  fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  background: '#095C46', border: 'none',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff',
                 }}
-              >+</button>
+              >
+                <Plus size={13} />
+              </button>
             </div>
           )}
         </div>
