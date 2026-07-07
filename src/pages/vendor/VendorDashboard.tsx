@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../api/axios'
 import type { Order, OrderStatus } from '../../types'
 import DashboardLayout from '../../components/DashboardLayout'
 import StatusPill from '../../components/StatusPill'
 import { ClipboardList, TrendingUp, Clock, CheckCircle } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface Stats {
   totalOrders: number
@@ -32,14 +34,17 @@ function StatCard({ icon, label, value, sub }: { icon: React.ReactNode; label: s
 const ACTIVE_STATUSES: OrderStatus[] = ['PAID', 'PREPARING', 'READY']
 
 export default function VendorDashboard() {
+  const { user } = useAuth()
+  const navigate  = useNavigate()
   const [orders, setOrders]   = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (user?.role === 'ADMIN') { navigate('/admin/vendors', { replace: true }); return }
     api.get<Order[]>('/api/vendor/orders')
       .then(r => setOrders(r.data))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   const today = new Date().toDateString()
   const stats: Stats = {
