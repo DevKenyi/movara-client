@@ -1,18 +1,18 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api/axios'
 import type { AuthUser } from '../types'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, Utensils } from 'lucide-react'
 
 export default function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const { login }   = useAuth()
+  const navigate    = useNavigate()
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [error, setError]       = useState('')
+  const [loading, setLoading]   = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -22,7 +22,7 @@ export default function LoginPage() {
       const { data } = await api.post<AuthUser>('/api/auth/login', { email, password })
       login(data)
       if (data.role === 'ADMIN') navigate('/admin/vendors')
-      else navigate('/vendor/orders')
+      else navigate('/vendor/dashboard')
     } catch (err: any) {
       setError(err.response?.data?.error ?? 'Invalid email or password')
     } finally {
@@ -33,95 +33,134 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #095C46 0%, #053A2C 50%, #0A7A5C 100%)',
+      background: '#F5F3EE',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 16,
+      padding: '24px 16px',
     }}>
+      {/* Logo icon */}
       <div style={{
-        width: '100%',
-        maxWidth: 400,
+        width: 72, height: 72, borderRadius: 20,
+        background: 'linear-gradient(135deg, #3DAA82, #095C46)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: 20,
+        boxShadow: '0 8px 24px rgba(9,92,70,0.25)',
+      }}>
+        <Utensils size={32} color="#fff" strokeWidth={1.75} />
+      </div>
+
+      {/* Heading */}
+      <h1 style={{
+        fontSize: 38, fontWeight: 800, color: '#111827',
+        marginBottom: 8, letterSpacing: '-0.5px', textAlign: 'center',
+      }}>
+        Welcome back
+      </h1>
+      <p style={{ fontSize: 15, color: '#6B7280', marginBottom: 28, textAlign: 'center' }}>
+        Sign in to order from your favourite spots
+      </p>
+
+      {/* Card */}
+      <div style={{
+        width: '100%', maxWidth: 420,
         background: '#fff',
         borderRadius: 20,
-        padding: '36px 32px',
-        boxShadow: '0 24px 48px -12px rgba(0,0,0,0.25)',
+        padding: '28px 28px 24px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
       }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: '#095C46',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: 22,
-            padding: '8px 18px',
-            borderRadius: 12,
-            letterSpacing: '-0.5px',
-          }}>
-            Movara
-          </div>
-          <p style={{ fontSize: 14, color: '#6B7280', marginTop: 10 }}>
-            Sign in to your dashboard
-          </p>
-        </div>
-
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email address</label>
-            <input
-              className="input"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@restaurant.com"
-              autoComplete="email"
-              required
-            />
+          {/* Email */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{
+              fontSize: 11, fontWeight: 700, color: '#9CA3AF',
+              textTransform: 'uppercase', letterSpacing: '0.08em',
+              display: 'block', marginBottom: 8,
+            }}>
+              Email
+            </label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={16} style={{
+                position: 'absolute', left: 16, top: '50%',
+                transform: 'translateY(-50%)', color: '#9CA3AF',
+              }} />
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+                style={{
+                  width: '100%', padding: '13px 16px 13px 44px',
+                  border: '1.5px solid #E5E7EB', borderRadius: 9999,
+                  fontSize: 15, fontFamily: 'inherit',
+                  background: '#fff', color: '#111827', outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                }}
+                onFocus={e => { e.target.style.borderColor = '#095C46'; e.target.style.boxShadow = '0 0 0 3px rgba(9,92,70,0.08)' }}
+                onBlur={e => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>Password</label>
+          {/* Password */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <label style={{
+                fontSize: 11, fontWeight: 700, color: '#9CA3AF',
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+              }}>
+                Password
+              </label>
+              <a href="#" style={{ fontSize: 13, color: '#095C46', textDecoration: 'none', fontWeight: 500 }}>
+                Forgot?
+              </a>
+            </div>
             <div style={{ position: 'relative' }}>
+              <Lock size={16} style={{
+                position: 'absolute', left: 16, top: '50%',
+                transform: 'translateY(-50%)', color: '#9CA3AF',
+              }} />
               <input
-                className="input"
                 type={showPass ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 autoComplete="current-password"
                 required
-                style={{ paddingRight: 42 }}
+                style={{
+                  width: '100%', padding: '13px 48px 13px 44px',
+                  border: '1.5px solid #E5E7EB', borderRadius: 9999,
+                  fontSize: 15, fontFamily: 'inherit',
+                  background: '#fff', color: '#111827', outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                }}
+                onFocus={e => { e.target.style.borderColor = '#095C46'; e.target.style.boxShadow = '0 0 0 3px rgba(9,92,70,0.08)' }}
+                onBlur={e => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
               />
               <button
                 type="button"
-                aria-label={showPass ? 'Hide password' : 'Show password'}
-                aria-pressed={showPass}
                 onClick={() => setShowPass(s => !s)}
                 style={{
-                  position: 'absolute', right: 12, top: '50%',
+                  position: 'absolute', right: 16, top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: '#9CA3AF', padding: 2,
+                  color: '#9CA3AF', padding: 0, display: 'flex', alignItems: 'center',
                 }}
               >
-                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
           </div>
 
-          <div style={{ textAlign: 'right', marginBottom: 20, marginTop: -8 }}>
-            <a href="#" style={{ fontSize: 13, color: '#095C46', textDecoration: 'none', fontWeight: 500 }}>
-              Forgot password?
-            </a>
-          </div>
-
           {error && (
             <div style={{
-              background: '#FEE2E2', border: '1px solid #FCA5A5',
-              borderRadius: 8, padding: '10px 14px',
+              background: '#FEF2F2', border: '1px solid #FCA5A5',
+              borderRadius: 10, padding: '10px 14px',
               color: '#991B1B', fontSize: 13, marginBottom: 16,
             }}>
               {error}
@@ -129,15 +168,40 @@ export default function LoginPage() {
           )}
 
           <button
-            className="btn btn-primary btn-lg"
             type="submit"
             disabled={loading}
-            style={{ width: '100%' }}
+            style={{
+              width: '100%', padding: '14px',
+              background: '#095C46', color: '#fff',
+              border: 'none', borderRadius: 9999,
+              fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              transition: 'background 0.15s',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => { if (!loading) (e.target as HTMLElement).style.background = '#053A2C' }}
+            onMouseLeave={e => { (e.target as HTMLElement).style.background = '#095C46' }}
           >
             {loading ? <><span className="spinner" /> Signing in…</> : 'Sign in'}
           </button>
+
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#6B7280', marginTop: 18, marginBottom: 0 }}>
+            New to Movara?{' '}
+            <a href="#" style={{ color: '#095C46', fontWeight: 600, textDecoration: 'none' }}>
+              Create an account
+            </a>
+          </p>
         </form>
       </div>
+
+      {/* Footer */}
+      <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 24, textAlign: 'center' }}>
+        By continuing, you agree to Movara's{' '}
+        <a href="#" style={{ color: '#6B7280', textDecoration: 'underline' }}>Terms</a>
+        {' '}and{' '}
+        <a href="#" style={{ color: '#6B7280', textDecoration: 'underline' }}>Privacy</a>.
+      </p>
     </div>
   )
 }
